@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Check Booking API</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .result { background: #f0f0f0; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .blocked { color: red; font-weight: bold; }
+        .available { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Test Check Booking API</h1>
+    <p>Testing date: <strong>2025-12-20</strong></p>
+    
+    <button onclick="testAPI()">Test API</button>
+    
+    <div id="results"></div>
+
+    <script>
+        async function testAPI() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Loading...</p>';
+            
+            try {
+                const response = await fetch('check_booking.php?date=2025-12-20');
+                const data = await response.json();
+                
+                console.log('API Response:', data);
+                
+                let html = '<div class="result">';
+                html += '<h3>API Response:</h3>';
+                html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                html += '</div>';
+                
+                // Show what times should be blocked
+                html += '<div class="result">';
+                html += '<h3>Time Slots Status:</h3>';
+                
+                const allTimes = [
+                    '08:00:00', '09:00:00', '10:00:00', '11:00:00', 
+                    '12:00:00', '13:00:00', '14:00:00', '15:00:00', 
+                    '16:00:00', '17:00:00'
+                ];
+                
+                allTimes.forEach(time => {
+                    const isBlocked = data.booked_times && data.booked_times.includes(time);
+                    const className = isBlocked ? 'blocked' : 'available';
+                    const status = isBlocked ? 'BLOCKED' : 'AVAILABLE';
+                    html += `<div class="${className}">${time} - ${status}</div>`;
+                });
+                
+                html += '</div>';
+                
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = '<div class="result" style="color: red;">Error: ' + error.message + '</div>';
+                console.error('Error:', error);
+            }
+        }
+        
+        // Auto-run on page load
+        window.onload = testAPI;
+    </script>
+</body>
+</html>
